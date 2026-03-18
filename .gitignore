@@ -1,0 +1,50 @@
+# Environment variables (NEVER commit these)
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Test files (remove before production)
+test-*.php
+debug-*.php
+setup-*.php
+check-*.php
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary
+*.tmp
+tmp/
+temp/
+
+# Database (keep schema, not data)
+*.sql.bak
+
+# Cache
+.cache/
+.parcel-cache
