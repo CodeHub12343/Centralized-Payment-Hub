@@ -1,0 +1,37 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+# Remove trailing slashes
+RewriteRule ^(.+)/$ /$1 [L,R=301]
+
+# If not a real file or directory
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rewrite /api/* to /api.php?route=*
+RewriteRule ^api/(.*)$ api.php?route=$1 [QSA,L]
+
+# Rewrite /webhook to /webhook.php
+RewriteRule ^webhook$ webhook.php [QSA,L]
+
+# Rewrite /pay to /pay.php
+RewriteRule ^pay$ pay.php [QSA,L]
+
+# Rewrite /return to /return.php
+RewriteRule ^return$ return.php [QSA,L]
+
+# Default to index.php
+RewriteRule ^(.*)$ index.php?route=$1 [QSA,L]
+</IfModule>
+
+# Disable directory listing
+Options -Indexes
+
+# Set proper headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

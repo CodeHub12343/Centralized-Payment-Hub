@@ -50,13 +50,22 @@ RUN cat > /etc/apache2/sites-available/api.conf << 'EOF'
 <VirtualHost *:80>
     DocumentRoot /var/www/html/public_html
     <Directory /var/www/html/public_html>
-        Options -MultiViews
-        RewriteEngine On
-        RewriteCond %{REQUEST_FILENAME} !-f
-        RewriteCond %{REQUEST_FILENAME} !-d
-        RewriteRule ^ index.php [QSA,L]
+        Options -MultiViews +FollowSymLinks
         AllowOverride All
         Require all granted
+        
+        # Enable mod_rewrite
+        <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            
+            # Skip rewriting for real files and directories
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            
+            # Rewrite /api/* to api.php
+            RewriteRule ^api/(.*)$ api.php?route=$1 [QSA,L]
+        </IfModule>
     </Directory>
 </VirtualHost>
 EOF
