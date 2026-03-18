@@ -61,14 +61,11 @@ EOF
 RUN a2ensite api.conf
 RUN a2dissite 000-default.conf
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html && \
+# Create logs directory FIRST before changing permissions
+RUN mkdir -p /var/www/html/logs && \
+    chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html && \
     chmod -R 775 /var/www/html/logs
-
-# Create logs directory if it doesn't exist
-RUN mkdir -p /var/www/html/logs && \
-    chown -R www-data:www-data /var/www/html/logs
 
 # Expose port 80
 EXPOSE 80
