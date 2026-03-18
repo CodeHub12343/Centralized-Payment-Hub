@@ -192,6 +192,13 @@ class SecurityHelper {
             return true;
         }
 
+        // Check if APCu is available
+        if (!extension_loaded('apcu')) {
+            // Fallback: Allow request if APCu not available (will be added to Docker)
+            Logger::log('APCu extension not available, skipping rate limiting', 'warning');
+            return true;
+        }
+
         $cacheKey = 'rate_limit_' . $ip;
         $attemptCount = apcu_fetch($cacheKey);
 

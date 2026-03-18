@@ -25,6 +25,9 @@ RUN docker-php-ext-install -j$(nproc) \
     mbstring \
     && docker-php-ext-enable pdo pdo_mysql mbstring
 
+# Install APCu from PECL for rate limiting cache
+RUN pecl install apcu && docker-php-ext-enable apcu
+
 # Copy application code
 COPY . /var/www/html/
 
