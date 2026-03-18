@@ -102,6 +102,7 @@ class JWTHandler {
     public static function verify($token) {
         $parts = explode('.', $token);
         if (count($parts) !== 3) {
+            error_log('[JWT] Invalid token format: ' . count($parts) . ' parts');
             throw new Exception('Invalid token format');
         }
         
@@ -112,7 +113,13 @@ class JWTHandler {
             hash_hmac('sha256', "$header.$payload", self::$secret, true)
         );
         
+        error_log('[JWT] Token signature check:');
+        error_log('[JWT] Received signature: ' . substr($signature, 0, 20) . '...');
+        error_log('[JWT] Expected signature: ' . substr($expectedSignature, 0, 20) . '...');
+        error_log('[JWT] Secret length: ' . strlen(self::$secret));
+        
         if (!hash_equals($signature, $expectedSignature)) {
+            error_log('[JWT] Signature mismatch! Token verification failed');
             throw new Exception('Invalid token signature');
         }
         
@@ -143,7 +150,11 @@ $publicRoutes = ['auth/login', 'health'];
 if (!in_array($route, $publicRoutes)) {
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     
+    error_log('[Auth Middleware] Route: ' . $route);
+    error_log('[Auth Middleware] Auth header present: ' . (!empty($authHeader) ? 'yes' : 'no'));
+    
     if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+        error_log('[Auth Middleware] Missing or invalid authorization header');
         http_response_code(401);
         echo json_encode(['error' => 'Missing or invalid authorization header']);
         exit;
@@ -151,8 +162,12 @@ if (!in_array($route, $publicRoutes)) {
     
     try {
         $token = str_replace('Bearer ', '', $authHeader);
+        error_log('[Auth Middleware] Token length: ' . strlen($token));
+        error_log('[Auth Middleware] Token prefix: ' . substr($token, 0, 50) . '...');
         $currentUser = JWTHandler::verify($token);
+        error_log('[Auth Middleware] Token verified successfully for user: ' . $currentUser['username']);
     } catch (Exception $e) {
+        error_log('[Auth Middleware] Token verification failed: ' . $e->getMessage());
         http_response_code(401);
         echo json_encode(['error' => 'Unauthorized: ' . $e->getMessage()]);
         exit;
