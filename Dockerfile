@@ -49,6 +49,22 @@ RUN sed -i 's|<Directory /var/www/>|<Directory /var/www/html/public_html>|g' /et
 RUN cat > /etc/apache2/sites-available/api.conf << 'EOF'
 <VirtualHost *:80>
     DocumentRoot /var/www/html/public_html
+    
+    # Pass environment variables to PHP
+    SetEnvIf Request_URI ".*" DB_HOST=${DB_HOST}
+    SetEnvIf Request_URI ".*" DB_PORT=${DB_PORT}
+    SetEnvIf Request_URI ".*" DB_USER=${DB_USER}
+    SetEnvIf Request_URI ".*" DB_PASS=${DB_PASS}
+    SetEnvIf Request_URI ".*" DB_NAME=${DB_NAME}
+    SetEnvIf Request_URI ".*" JWT_SECRET=${JWT_SECRET}
+    SetEnvIf Request_URI ".*" CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+    SetEnvIf Request_URI ".*" APP_ENV=${APP_ENV}
+    SetEnvIf Request_URI ".*" APP_DEBUG=${APP_DEBUG}
+    SetEnvIf Request_URI ".*" PAWAPAY_API_TOKEN=${PAWAPAY_API_TOKEN}
+    SetEnvIf Request_URI ".*" PAWAPAY_API_URL=${PAWAPAY_API_URL}
+    SetEnvIf Request_URI ".*" PAWAPAY_MERCHANT_ID=${PAWAPAY_MERCHANT_ID}
+    SetEnvIf Request_URI ".*" FORCE_HTTPS=${FORCE_HTTPS}
+    
     <Directory /var/www/html/public_html>
         Options -MultiViews +FollowSymLinks
         AllowOverride All
@@ -83,7 +99,11 @@ set +a
 EOF
 RUN chmod +x /etc/apache2/envvars.custom
 
-# Create logs directory FIRST before changing permissions
+# Create PHP init file that ensures environment variables are available
+RUN cat > /usr/local/etc/php/conf.d/0-environment.ini << 'EOF'
+; Load environment variables from /etc/environment for Docker
+auto_prepend_file = /var/www/html/app/bootstrap-environment.php
+EOF
 RUN mkdir -p /var/www/html/logs && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html && \
