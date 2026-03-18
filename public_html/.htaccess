@@ -2,6 +2,9 @@
 RewriteEngine On
 RewriteBase /
 
+# Pass Authorization header to PHP
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
 # Remove trailing slashes
 RewriteRule ^(.+)/$ /$1 [L,R=301]
 

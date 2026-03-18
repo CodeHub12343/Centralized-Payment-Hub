@@ -148,10 +148,15 @@ $method = $_SERVER['REQUEST_METHOD'];
 $publicRoutes = ['auth/login', 'health'];
 
 if (!in_array($route, $publicRoutes)) {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    // Try multiple locations where Authorization header might be
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? 
+                  $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? 
+                  $_ENV['HTTP_AUTHORIZATION'] ?? 
+                  '';
     
     error_log('[Auth Middleware] Route: ' . $route);
     error_log('[Auth Middleware] Auth header present: ' . (!empty($authHeader) ? 'yes' : 'no'));
+    error_log('[Auth Middleware] Auth header value: ' . substr($authHeader, 0, 50) . '...');
     
     if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
         error_log('[Auth Middleware] Missing or invalid authorization header');

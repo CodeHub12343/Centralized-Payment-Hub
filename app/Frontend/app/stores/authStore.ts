@@ -32,11 +32,17 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await authAPI.login(username, password);
+      
+      console.log('[Auth Store] Login response:', response);
+      console.log('[Auth Store] Token:', response.token);
+      console.log('[Auth Store] Admin:', response.admin);
 
       if (response.success && response.token) {
         // Store token and user
         localStorage.setItem('auth_token', response.token);
         localStorage.setItem('auth_user', JSON.stringify(response.admin));
+        
+        console.log('[Auth Store] Token stored to localStorage:', localStorage.getItem('auth_token'));
 
         set({
           token: response.token,
@@ -45,7 +51,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
           isLoading: false,
           error: null,
         });
+        console.log('[Auth Store] State updated - user is authenticated');
       } else {
+        console.log('[Auth Store] Login failed - no success flag or token');
         set({
           isLoading: false,
           error: response.error || 'Login failed',
@@ -53,6 +61,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || 'Login failed';
+      console.error('[Auth Store] Login error:', err);
       set({
         isLoading: false,
         error: errorMessage,

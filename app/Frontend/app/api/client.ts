@@ -16,12 +16,21 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
+    console.log('[API Client] Request to:', config.url);
+    console.log('[API Client] Token from localStorage:', token ? `${token.substring(0, 30)}...` : 'NO TOKEN');
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('[API Client] Added Authorization header');
+    } else {
+      console.log('[API Client] No token found - request will be unauthorized');
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('[API Client] Request error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Add response interceptor to handle token expiration
