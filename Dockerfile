@@ -73,6 +73,16 @@ EOF
 RUN a2ensite api.conf
 RUN a2dissite 000-default.conf
 
+# Export environment variables for Apache/PHP
+RUN cat > /etc/apache2/envvars.custom << 'EOF'
+#!/bin/bash
+# Load environment variables for Apache
+set -a
+[ -f /etc/environment ] && source /etc/environment
+set +a
+EOF
+RUN chmod +x /etc/apache2/envvars.custom
+
 # Create logs directory FIRST before changing permissions
 RUN mkdir -p /var/www/html/logs && \
     chown -R www-data:www-data /var/www/html && \

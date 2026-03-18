@@ -5,33 +5,61 @@
  */
 
 // ============================================
+// ENVIRONMENT VARIABLE HELPER
+// ============================================
+
+/**
+ * Get environment variable with fallback to /etc/environment
+ */
+function getEnvVar($key, $default = null) {
+    $value = getenv($key);
+    
+    // If getenv() fails, try reading from /etc/environment (Docker use case)
+    if (!$value && file_exists('/etc/environment')) {
+        $lines = file('/etc/environment', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos($line, '=') !== false) {
+                [$envKey, $envValue] = explode('=', $line, 2);
+                $envKey = trim($envKey);
+                $envValue = trim($envValue, '\'"');
+                if ($envKey === $key) {
+                    return $envValue;
+                }
+            }
+        }
+    }
+    
+    return $value ?: $default;
+}
+
+// ============================================
 // DATABASE CONFIGURATION
 // ============================================
-define('DB_HOST', getenv('DB_HOST'));
-define('DB_USER', getenv('DB_USER'));
-define('DB_PASS', getenv('DB_PASS'));
-define('DB_NAME', getenv('DB_NAME'));
-define('DB_PORT', getenv('DB_PORT') ?: 3306);
+define('DB_HOST', getEnvVar('DB_HOST'));
+define('DB_USER', getEnvVar('DB_USER'));
+define('DB_PASS', getEnvVar('DB_PASS'));
+define('DB_NAME', getEnvVar('DB_NAME'));
+define('DB_PORT', getEnvVar('DB_PORT') ?: 3306);
 define('DB_CHARSET', 'utf8mb4');
 
 // ============================================
 // APPLICATION CONFIGURATION
 // ============================================
 define('APP_NAME', 'Centralized Payment Hub');
-define('APP_ENV', getenv('APP_ENV') ?: 'production');
-define('APP_DEBUG', getenv('APP_DEBUG') ?: false);
+define('APP_ENV', getEnvVar('APP_ENV', 'production'));
+define('APP_DEBUG', getEnvVar('APP_DEBUG', false));
 
 // Domain Configuration
-define('APP_DOMAIN', getenv('APP_DOMAIN') ?: 'https://pay.pivotpointinv.com');
+define('APP_DOMAIN', getEnvVar('APP_DOMAIN', 'https://pay.pivotpointinv.com'));
 define('APP_WEBHOOK_URL', APP_DOMAIN . '/webhook.php');
 define('APP_RETURN_URL', APP_DOMAIN . '/return.php');
 
 // ============================================
 // PAWAPAY CONFIGURATION
 // ============================================
-define('PAWAPAY_API_TOKEN', getenv('PAWAPAY_API_TOKEN') ?: 'your_sandbox_token_here');
-define('PAWAPAY_API_URL', getenv('PAWAPAY_API_URL') ?: 'https://sandbox.pawapay.io');
-define('PAWAPAY_MERCHANT_ID', getenv('PAWAPAY_MERCHANT_ID') ?: '303'); // From your token
+define('PAWAPAY_API_TOKEN', getEnvVar('PAWAPAY_API_TOKEN', 'your_sandbox_token_here'));
+define('PAWAPAY_API_URL', getEnvVar('PAWAPAY_API_URL', 'https://sandbox.pawapay.io'));
+define('PAWAPAY_MERCHANT_ID', getEnvVar('PAWAPAY_MERCHANT_ID', '303')); // From your token
 define('PAWAPAY_API_VERSION', 'v1');
 
 // ============================================
@@ -45,7 +73,7 @@ define('SESSION_TIMEOUT', 60 * 60); // 1 hour
 define('SESSION_NAME', 'ph_admin_session');
 
 // HTTPS Enforcement
-define('FORCE_HTTPS', getenv('FORCE_HTTPS') ?: true);
+define('FORCE_HTTPS', getEnvVar('FORCE_HTTPS', true));
 
 // ============================================
 // LOGGING CONFIGURATION
@@ -66,12 +94,12 @@ define('ALLOWED_ORIGINS', [
 // ============================================
 // JWT CONFIGURATION (ADMIN API)
 // ============================================
-define('JWT_SECRET', getenv('JWT_SECRET'));
+define('JWT_SECRET', getEnvVar('JWT_SECRET'));
 if (!JWT_SECRET) {
     throw new Exception('JWT_SECRET environment variable is required for production');
 }
 define('JWT_EXPIRATION', 7200); // 2 hours (reduced from 24 for security)
-define('CORS_ALLOWED_ORIGINS', getenv('CORS_ALLOWED_ORIGINS'));
+define('CORS_ALLOWED_ORIGINS', getEnvVar('CORS_ALLOWED_ORIGINS'));
 
 // ============================================
 // RATE LIMITING
